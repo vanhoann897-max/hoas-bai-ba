@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hóa Học 10 - Bài 3: Cấu Trúc Lớp Vỏ Electron Nguyên Tử</title>
+    <style>
+        :root {
+            --primary-color: #3b82f6;
+            --primary-dark: #1d4ed8;
+            --secondary-color: #06b6d4;
+            --bg-color: #f1f5f9;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --border-color: #e2e8f0;
+            --success-color: #10b981;
+            --error-color: #ef4444;
+            --warning-color: #f59e0b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding-bottom: 40px;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1e293b 0%, #3b82f6 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+
+        header p {
+            color: #e2e8f0;
+            font-size: 1rem;
+        }
+
+        /* Thanh điều hướng Tabs */
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            background-color: #ffffff;
+            border-bottom: 2px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 14px 20px;
+            border: none;
+            background: none;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab-btn:hover {
+            color: var(--primary-color);
+            background-color: #f8fafc;
+        }
+
+        .tab-btn.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 25px auto;
+            padding: 0 15px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+
+        h2.section-title {
+            font-size: 1.4rem;
+            color: var(--primary-dark);
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #eff6ff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        h3.sub-title {
+            font-size: 1.15rem;
+            color: #1e293b;
+            margin: 16px 0 10px 0;
+        }
+
+        /* Định dạng nội dung lý thuyết */
+        .theory-box {
+            background-color: #f8fafc;
+            border-left: 4px solid var(--primary-color);
+            padding: 14px 18px;
+            margin: 12px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        ul, ol {
+            padding-left: 22px;
+            margin-bottom: 12px;
+        }
+
+        li {
+            margin-bottom: 6px;
+        }
+
+        /* Bảng tra cứu */
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 0.95rem;
+        }
+
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 10px 12px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #f1f5f9;
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+
+        /* Badge phân loại */
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .badge-metal { background-color: #dbeafe; color: #1e40af; }
+        .badge-nonmetal { background-color: #fce7f3; color: #9d174d; }
+        .badge-noble { background-color: #dcfce7; color: #166534; }
+
+        /* Trắc nghiệm */
+        .question-card {
+            background-color: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 18px;
+            margin-bottom: 16px;
+        }
+
+        .question-text {
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .options-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .opt-btn {
+            background-color: #f8fafc;
+            border: 1px solid var(--border-color);
+            padding: 10px 14px;
+            border-radius: 8px;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+        }
+
+        .opt-btn:hover {
+            background-color: #e2e8f0;
+        }
+
+        .opt-btn.correct {
+            background-color: #dcfce7 !important;
+            border-color: var(--success-color) !important;
+            color: #166534;
+            font-weight: 600;
+        }
+
+        .opt-btn.incorrect {
+            background-color: #fee2e2 !important;
+            border-color: var(--error-color) !important;
+            color: #991b1b;
+        }
+
+        .explanation {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #eff6ff;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            color: #1e40af;
+            display: none;
+        }
+
+        /* Tool tính toán */
+        .tool-input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        input[type="number"] {
+            padding: 10px 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            flex: 1;
+        }
+
+        button.primary-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button.primary-btn:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .result-card {
+            background-color: #f8fafc;
+            border: 1px dashed var(--primary-color);
+            padding: 16px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Bài 3: Cấu Trúc Lớp Vỏ Electron Nguyên Tử</h1>
+        <p>Bộ Giáo Dục & Đào Tạo • Hóa Học Lớp 10 (Chương Trình Mới)</p>
+    </header>
+
+    <!-- Thanh Điều Hướng -->
+    <nav class="nav-tabs">
+        <button class="tab-btn active" onclick="switchTab('theory')">📘 Lý Thuyết Trọn Bộ</button>
+        <button class="tab-btn" onclick="switchTab('table')">📊 Bảng 20 Nguyên Tố</button>
+        <button class="tab-btn" onclick="switchTab('quiz')">✏️ Trắc Nghiệm & Bài Tập</button>
+        <button class="tab-btn" onclick="switchTab('tool')">⚡ Tra Cứu Cấu Hình e</button>
+    </nav>
+
+    <div class="container">
+
+        <!-- TAB 1: LÝ THUYẾT TRỌN BỘ -->
+        <div id="theory" class="tab-content active">
+            
+            <!-- I. Chuyển động electron -->
+            <div class="card">
+                <h2 class="section-title">I. Chuyển Động Của Electron Trong Nguyên Tử</h2>
+                <p><b>1. Mô hình Rutherford – Bohr (Cổ điển):</b> Các electron chuyển động xung quanh hạt nhân theo những quỹ đạo tròn hoặc bầu dục xác định (giống như các hành tinh quay quanh Mặt Trời).</p>
+                
+                <p style="margin-top:10px;"><b>2. Mô hình hiện đại:</b> Trong nguyên tử, electron chuyển động rất nhanh và <b>không theo quỹ đạo xác định</b>.</p>
+                <div class="theory-box">
+                    <b>Khái niệm Orbital nguyên tử (AO - Atomic Orbital):</b> Là vùng không gian xung quanh hạt nhân mà tại đó <b>xác suất tìm thấy electron là lớn nhất (khoảng 90%)</b>.
+                </div>
+                
+                <h3 class="sub-title">Hình dạng và ký hiệu các Orbital (AO):</h3>
+                <ul>
+                    <li><b>Orbital s:</b> Có dạng <b>hình cầu</b>.</li>
+                    <li><b>Orbital p:</b> Có dạng <b>hình số 8 nổi</b> (gồm 3 định hướng không gian: $p_x, p_y, p_z$).</li>
+                </ul>
+
+                <h3 class="sub-title">Ô orbital và Quy tắc điền electron:</h3>
+                <ul>
+                    <li>Mỗi AO được biểu diễn bằng một <b>ô vuông (ô orbital)</b>.</li>
+                    <li>Trong 1 AO chỉ chứa <b>tối đa 2 electron</b> có chiều tự quay ngược nhau (<b>Nguyên lí Pauli</b>).
+                        <ul>
+                            <li>AO trống: ☐</li>
+                            <li>AO có 1 electron độc thân: ↿ (mũi tên hướng lên viết trước)</li>
+                            <li>AO đã bão hòa (2 electron): ↿⇂ (ghép đôi)</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- II. Lớp và phân lớp -->
+            <div class="card">
+                <h2 class="section-title">II. Lớp Và Phân Lớp Electron</h2>
+                
+                <h3 class="sub-title">1. Lớp electron</h3>
+                <p>Các electron ở lớp gần hạt nhân bị hút mạnh hơn, có mức năng lượng thấp hơn so với electron ở lớp xa hạt nhân.</p>
+                <div class="table-responsive">
+                    <table>
+                        <tr>
+                            <th>Số thứ tự lớp ($n$)</th>
+                            <th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th>
+                        </tr>
+                        <tr>
+                            <th>Tên lớp</th>
+                            <td><b>K</b></td><td><b>L</b></td><td><b>M</b></td><td><b>N</b></td><td><b>O</b></td><td><b>P</b></td><td><b>Q</b></td>
+                        </tr>
+                    </table>
+                </div>
+
+                <h3 class="sub-title">2. Phân lớp electron</h3>
+                <p>Mỗi lớp $n$ ($n \le 4$) gồm $n$ phân lớp, kí hiệu bằng các chữ cái viết thường: <b>s, p, d, f</b>.</p>
+                <ul>
+                    <li><b>Lớp K ($n=1$):</b> Có 1 phân lớp $\rightarrow 1s$.</li>
+                    <li><b>Lớp L ($n=2$):</b> Có 2 phân lớp $\rightarrow 2s, 2p$.</li>
+                    <li><b>Lớp M ($n=3$):</b> Có 3 phân lớp $\rightarrow 3s, 3p, 3d$.</li>
+                    <li><b>Lớp N ($n=4$):</b> Có 4 phân lớp $\rightarrow 4s, 4p, 4d, 4f$.</li>
+                </ul>
+
+                <h3 class="sub-title">3. Số lượng AO và Electron tối đa</h3>
+                <div class="theory-box">
+                    <ul>
+                        <li><b>Số AO trong phân lớp:</b> Phân lớp $s$ có <b>1 AO</b>; $p$ có <b>3 AO</b>; $d$ có <b>5 AO</b>; $f$ có <b>7 AO</b>.</li>
+                        <li><b>Số AO tối đa trong lớp thứ $n$ ($n \le 4$):</b> bằng $n^2$ AO.</li>
+                        <li><b>Số electron tối đa trong lớp thứ $n$ ($n \le 4$):</b> bằng $2n^2$ electron.
+                            <ul>
+                               <li>Lớp K ($n=1$): Tối đa $2 \times 1^2 = \mathbf{2e}$</li>
+                               <li>Lớp L ($n=2$): Tối đa $2 \times 2^2 = \mathbf{8e}$</li>
+                               <li>Lớp M ($n=3$): Tối đa $2 \times 3^2 = \mathbf{18e}$</li>
+                               <li>Lớp N ($n=4$): Tối đa $2 \times 4^2 = \mathbf{32e}$</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- III. Cấu hình electron -->
+            <div class="card">
+                <h2 class="section-title">III. Cấu Hình Electron Của Nguyên Tử</h2>
+                
+                <h3 class="sub-title">1. Thứ tự mức năng lượng (Dãy Aufbau)</h3>
+                <p>Các electron lần lượt chiếm các AO có mức năng lượng từ thấp đến cao (<b>Nguyên lí vững bền</b>):</p>
+                <div style="background-color: #fef3c7; color: #92400e; padding: 10px 14px; border-radius: 8px; font-weight: bold; margin: 10px 0;">
+                    1s 2s 2p 3s 3p 4s 3d 4p 5s...
+                </div>
+
+                <h3 class="sub-title">2. Quy tắc phân bố electron vào các AO (Quy tắc Hund)</h3>
+                <p>Trong cùng một phân lớp, các electron sẽ phân bố sao cho <b>số electron độc thân là tối đa</b> và các electron này phải có chiều tự quay giống nhau.</p>
+
+                <h3 class="sub-title">3. Các bước viết cấu hình electron nguyên tử</h3>
+                <ol>
+                    <li><b>Bước 1:</b> Xác định số electron của nguyên tử (bằng số hiệu nguyên tử $Z$).</li>
+                    <li><b>Bước 2:</b> Điền electron vào các phân lớp theo chiều tăng dần năng lượng ($1s \rightarrow 2s \rightarrow 2p \rightarrow 3s \rightarrow 3p \rightarrow 4s \rightarrow 3d...$).</li>
+                    <li><b>Bước 3:</b> Sắp xếp lại các phân lớp theo từng lớp (nếu có sự chèn mức năng lượng như $4s$ và $3d$).</li>
+                </ol>
+
+                <h3 class="sub-title">4. Đặc điểm lớp electron ngoài cùng & Dự đoán tính chất</h3>
+                <div class="theory-box">
+                    <ul>
+                        <li><b>1, 2, 3 electron ngoài cùng:</b> Thường là nguyên tử <b>Kim loại</b> (trừ H, He, B).</li>
+                        <li><b>5, 6, 7 electron ngoài cùng:</b> Thường là nguyên tử <b>Phi kim</b>.</li>
+                        <li><b>8 electron ngoài cùng:</b> Là nguyên tử <b>Khí hiếm</b> (rất bền vững, riêng Helium có 2e ngoài cùng).</li>
+                        <li><b>4 electron ngoài cùng:</b> Có thể là kim loại (C, Si) hoặc phi kim (Ge, Sn, Pb tùy Z).</li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- TAB 2: BẢNG 20 NGUYÊN TỐ -->
+        <div id="table" class="tab-content">
+            <div class="card">
+                <h2 class="section-title">Bảng Cấu Hình Electron 20 Nguyên Tố Đầu Tiên (Z = 1 đến 20)</h2>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Z</th>
+                                <th>Tên Nguyên Tố</th>
+                                <th>Ký Hiệu</th>
+                                <th>Cấu Hình Electron</th>
+                                <th>e Ngoài Cùng</th>
+                                <th>Phân Loại</th>
+                            </tr>
+                        </thead>
+                        <tbody id="elements-table-body">
+                            <!-- JS sẽ load tự động -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: TRẮC NGHIỆM & BÀI TẬP -->
+        <div id="quiz" class="tab-content">
+            <div class="card">
+                <h2 class="section-title">Trắc Nghiệm & Bài Tập Củng Cố Kiến Thức SGK</h2>
+                <div id="quiz-container">
+                    <!-- JS load danh sách câu hỏi -->
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 4: TOOL TRA CỨU -->
+        <div id="tool" class="tab-content">
+            <div class="card">
+                <h2 class="section-title">Công Cụ Phân Tích Cấu Hình Electron Tự Động</h2>
+                <p style="margin-bottom: 12px; color: var(--text-muted);">Nhập số hiệu nguyên tử $Z$ (từ 1 đến 20) để xem chi tiết cách sắp xếp electron và dự đoán tính chất hóa học:</p>
+                
+                <div class="tool-input-group">
+                    <input type="number" id="z-input" min="1" max="20" placeholder="Nhập Z (Ví dụ: 8, 11, 16, 17, 20...)">
+                    <button class="primary-btn" onclick="analyzeZ()">Phân Tích Chi Tiết</button>
+                </div>
+
+                <div id="tool-result" class="result-card" style="display: none;">
+                    <!-- JS trả kết quả -->
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Chuyển Tab
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById(tabId).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Dữ liệu 20 nguyên tố
+        const elementsData = [
+            { z: 1, name: "Hydrogen", symbol: "H", config: "1s¹", outer: 1, type: "Phi kim", badge: "badge-nonmetal" },
+            { z: 2, name: "Helium", symbol: "He", config: "1s²", outer: 2, type: "Khí hiếm", badge: "badge-noble" },
+            { z: 3, name: "Lithium", symbol: "Li", config: "1s² 2s¹", outer: 1, type: "Kim loại", badge: "badge-metal" },
+            { z: 4, name: "Beryllium", symbol: "Be", config: "1s² 2s²", outer: 2, type: "Kim loại", badge: "badge-metal" },
+            { z: 5, name: "Boron", symbol: "B", config: "1s² 2s² 2p¹", outer: 3, type: "Phi kim", badge: "badge-nonmetal" },
+            { z: 6, name: "Carbon", symbol: "C", config: "1s² 2s² 2p²", outer: 4, type: "Phi kim", badge: "badge-nonmetal" },
+            { z: 7, name: "Nitrogen", symbol: "N", config: "1s² 2s² 2p³", outer: 5, type: "Phi kim", badge: "badge-nonmetal" },
+            { z: 8, name: "Oxygen", symbol: "O", config: "1s² 2s² 2p⁴", outer: 6, type: "Phi kim", badge: "badge-nonmetal" },
+            { z: 9, name: "Fluorine", symbol: "F", config: "1s² 2s² 2p⁵", outer: 7, type: "Phi kim", badge: "badge-nonmetal" },
+            { z: 10, name: "Neon", symbol: "Ne", config: "1s² 2s² 2p⁶", outer: 8, type: "Khí hiếm", badge: "badge-noble" },
+            { z: 11, name: "Sodium", symbol: "Na", config: "[Ne] 3s¹", outer: 1, type: "Kim loại", badge: "badge-metal" },
+            { z: 12, name: "Magnesium", symbol: "Mg", config: "[Ne] 3s²", outer: 2, type: "Kim loại", badge: "badge-metal" },
+            { z: 13, name: "Aluminium", symbol: "Al", config: "[Ne] 3s² 3p¹", outer: 3, type: "Kim loại", badge: "badge-metal" },
+            { z: 14, name: "Silicon", symbol: "Si", config: "[Ne] 3s² 3p²", outer: 4, type: "Phi kim", badge: "badge-nonmetal" },
+            { z: 15, name: "Phosphorus", symbol: "P", config: "[Ne] 3s² 3p³", outer: 5, type: "Phi kim", badge: "badge-nonmetal" },
+            { z: 16, name: "Sulfur", symbol: "S", config: "[Ne] 3s² 3p⁴", outer: 6, type: "Phi kim", badge: "badge-nonmetal" },
+            { z: 17, name: "Chlorine", symbol: "Cl", config: "[Ne] 3s² 3p⁵", outer: 7, type: "Phi kim", badge: "badge-nonmetal" },
+            { z: 18, name: "Argon", symbol: "Ar", config: "[Ne] 3s² 3p⁶", outer: 8, type: "Khí hiếm", badge: "badge-noble" },
+            { z: 19, name: "Potassium", symbol: "K", config: "[Ar] 4s¹", outer: 1, type: "Kim loại", badge: "badge-metal" },
+            { z: 20, name: "Calcium", symbol: "Ca", config: "[Ar] 4s²", outer: 2, type: "Kim loại", badge: "badge-metal" }
+        ];
+
+        // Load bảng 20 nguyên tố
+        function loadElementsTable() {
+            const tbody = document.getElementById('elements-table-body');
+            tbody.innerHTML = elementsData.map(e => `
+                <tr>
+                    <td><b>${e.z}</b></td>
+                    <td>${e.name}</td>
+                    <td><b>${e.symbol}</b></td>
+                    <td><code>${e.config}</code></td>
+                    <td>${e.outer}e</td>
+                    <td><span class="badge ${e.badge}">${e.type}</span></td>
+                </tr>
+            `).join('');
+        }
+
+        // Danh sách câu hỏi trắc nghiệm
+        const quizData = [
+            {
+                q: "1. Vùng không gian xung quanh hạt nhân mà tại đó xác suất tìm thấy electron là lớn nhất (khoảng 90%) được gọi là gì?",
+                options: ["A. Lớp electron", "B. Orbital nguyên tử (AO)", "C. Phân lớp electron", "D. Vỏ nguyên tử"],
+                answer: 1,
+                explain: "Định nghĩa theo mô hình hiện đại SGK: Orbital nguyên tử (AO) là vùng không gian xung quanh hạt nhân có xác suất có mặt electron khoảng 90%."
+            },
+            {
+                q: "2. Orbital s có dạng hình gì và Orbital p có dạng hình gì?",
+                options: ["A. s hình số 8 nổi, p hình cầu", "B. s hình cầu, p hình số 8 nổi", "C. s hình tròn, p hình elip", "D. Cả s và p đều hình cầu"],
+                answer: 1,
+                explain: "Orbital s có dạng hình cầu, orbital p có dạng hình số 8 nổi nằm dọc theo các trục x, y, z."
+            },
+            {
+                q: "3. Lớp electron L (với n = 2) có tổng số orbital (AO) tối đa và số electron tối đa lần lượt là bao nhiêu?",
+                options: ["A. 2 AO và 4e", "B. 4 AO và 8e", "C. 8 AO và 18e", "D. 9 AO và 18e"],
+                answer: 1,
+                explain: "Số AO = n² = 2² = 4 AO (1 AO 2s và 3 AO 2p). Số e tối đa = 2n² = 2×2² = 8 electron."
+            },
+            {
+                q: "4. Nguyên tử Sulfur (S) có Z = 16. Cấu hình electron của Sulfur là:",
+                options: [
+                    "A. 1s² 2s² 2p⁶ 3s² 3p³",
+                    "B. 1s² 2s² 2p⁶ 3s² 3p⁴",
+                    "C. 1s² 2s² 2p⁶ 3s² 3p⁵",
+                    "D. 1s² 2s² 2p⁵ 3s² 3p⁵"
+                ],
+                answer: 1,
+                explain: "Z = 16: Điền lần lượt 1s²(2) 2s²(4) 2p⁶(10) 3s²(12) 3p⁴(16). Cấu hình là 1s² 2s² 2p⁶ 3s² 3p⁴."
+            },
+            {
+                q: "5. Nguyên tử Chlorine (Z = 17) có bao nhiêu electron ở lớp ngoài cùng và thuộc loại nguyên tố nào?",
+                options: [
+                    "A. 5e ngoài cùng - Phi kim",
+                    "B. 7e ngoài cùng - Phi kim",
+                    "C. 1e ngoài cùng - Kim loại",
+                    "D. 8e ngoài cùng - Khí hiếm"
+                ],
+                answer: 1,
+                explain: "Cl (Z = 17) có cấu hình 1s² 2s² 2p⁶ 3s² 3p⁵. Lớp ngoài cùng (lớp 3) có 2 + 5 = 7e ⇒ Là nguyên tố Phi kim."
+            }
+        ];
+
+        // Load bài tập trắc nghiệm
+        function loadQuiz() {
+            const container = document.getElementById('quiz-container');
+            container.innerHTML = quizData.map((item, idx) => `
+                <div class="question-card">
+                    <div class="question-text">${item.q}</div>
+                    <div class="options-group">
+                        ${item.options.map((opt, oIdx) => `
+                            <button class="opt-btn" onclick="checkQuiz(this, ${idx}, ${oIdx})">${opt}</button>
+                        `).join('')}
+                    </div>
+                    <div class="explanation" id="exp-${idx}"><b>Giải thích:</b> ${item.explain}</div>
+                </div>
+            `).join('');
+        }
+
+        // Kiểm tra đáp án
+        function checkQuiz(btn, qIdx, selectedOpt) {
+            const card = btn.closest('.question-card');
+            const btns = card.querySelectorAll('.opt-btn');
+            const exp = card.querySelector('.explanation');
+            const correctOpt = quizData[qIdx].answer;
+
+            btns.forEach(b => b.disabled = true);
+
+            if (selectedOpt === correctOpt) {
+                btn.classList.add('correct');
+            } else {
+                btn.classList.add('incorrect');
+                btns[correctOpt].classList.add('correct');
+            }
+
+            exp.style.display = 'block';
+        }
+
+        // Tool phân tích cấu hình Z
+        function analyzeZ() {
+            const zVal = parseInt(document.getElementById('z-input').value);
+            const resBox = document.getElementById('tool-result');
+
+            if (isNaN(zVal) || zVal < 1 || zVal > 20) {
+                resBox.style.display = 'block';
+                resBox.innerHTML = '<span style="color:var(--error-color)">⚠️ Vui lòng nhập số hiệu nguyên tử Z từ 1 đến 20!</span>';
+                return;
+            }
+
+            const elem = elementsData.find(e => e.z === zVal);
+            resBox.style.display = 'block';
+            resBox.innerHTML = `
+<b>📌 PHÂN TÍCH KẾT QUẢ CHO Z = ${elem.z} (${elem.name} - ${elem.symbol}):</b>
+------------------------------------------------
+• Tên nguyên tố: <b>${elem.name}</b> (Ký hiệu: <b>${elem.symbol}</b>)
+• Cấu hình electron: <b>${elem.config}</b>
+• Tổng số electron: <b>${elem.z}e</b>
+• Số electron lớp ngoài cùng: <b>${elem.outer}e</b>
+• Tính chất hóa học cơ bản: <b>${elem.type.toUpperCase()}</b>
+------------------------------------------------
+💡 <i>Ghi chú: Lớp vỏ được lấp đầy tuân theo Nguyên lí vững bền, Nguyên lí Pauli và Quy tắc Hund.</i>
+            `;
+        }
+
+        // Khởi tạo trang
+        window.onload = function() {
+            loadElementsTable();
+            loadQuiz();
+        };
+    </script>
+</body>
+</html>
